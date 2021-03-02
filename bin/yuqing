@@ -1,0 +1,68 @@
+#! /usr/bin/env node
+
+// 配置可执行的命令 commander
+const program = require('commander')
+const chalk = require('chalk')
+const { name, version } = require('../lib/constants')
+
+// 脚手架核心功能
+// 1）创建项目
+program
+  .command('create <name>') // 配置一个命令
+  .alias('c')
+  .description('创建一个新项目') // 命令描述信息
+  .option('-f, --force', '覆盖目标目录（如果存在）') // 如果重名，是否强制创建这个项目
+  .action((name, cmd) => {
+    /**
+     * name: <name>
+     * cmd: 后面的参数信息
+     */
+    // 创建项目
+    require('../lib/create')(name, cmd)
+  }) // 执行这个命令时执行的动作
+
+// 2）更改配置文件
+// yuqing config --get a 获取配置文件
+// yuqing config --set a 1 写入配置文件中
+// [] 表示可选参数 <> 表示必填参数
+program
+  .command('config [value]') // 表示命令后面接一个参数
+  .alias('conf')
+  .description('解析和更新的配置文件(待更新)')
+  .option('-g, --get <k>', '获取配置文件')
+  .option('-s, --set <k> <v>')
+  .option('-d, --delete <k>', '删除配置文件的某个选项')
+  .action((value, cmd) => {
+    console.log(value, cmd)
+  })
+
+  // 获取本地缓存模板
+  program
+    .command('getTemplate')
+    .alias('getTemp')
+    .description('得到本地模板缓存列表')
+    .action(() => {
+      require('../lib/getCache')()
+    })
+
+  // 清除本地模板缓存
+  program
+    .command('clear [template]')
+    .description('删除本地模板缓存')
+    .action((template) => {
+      require('../lib/clearCache')(template)
+    })
+
+// 获取脚手架版本号
+program
+  .version(`${name}@${version}`)
+  .usage(`<command> [option]`)
+
+program.on('--help', () => {
+  console.log()
+  console.log(`执行 ${chalk.cyan('yuqing <command> --help')} 显示详细信息`)
+  console.log()
+})
+
+// 解析用户执行命令时的参数
+program.parse(process.argv)
